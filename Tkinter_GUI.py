@@ -1,7 +1,8 @@
+import os
 import tkinter as tk                # python 3
 from tkinter import font  as tkfont # python 3
 from datetime import date
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import time
 #import Tkinter as tk     # python 2
@@ -9,11 +10,6 @@ import time
 
 today = date.today()
 today = today.strftime("%m-%d-%y")
-
-file = True
-# file = open("HEDATA_" + today + ".csv", "w")
-# file.write(today + '\n')
-# file.close()
 
 class SampleApp(tk.Tk):
 
@@ -53,6 +49,9 @@ class SampleApp(tk.Tk):
         file = open("HEDATA_" + today + ".csv", "w")
         file.write(today + '\n\n')
         file.close()
+
+    def take_pictures(self):
+        os.system('python3 simple.py')
 
 
 class StartPage(tk.Frame):
@@ -122,8 +121,9 @@ class InputPage(tk.Frame):
                                                                                  entry_secondary_clock.get(),
                                                                                     controller))
         btn_ok.grid(row=5, column=0)
-        # btn_make = tk.Button(self, text="Start Over", padx = 20, command=lambda: controller.make_file())
-        # btn_make.grid(row=5, column=1)
+        btn_make = tk.Button(self, text="Take Pictures", padx = 20, command=lambda: controller.take_pictures())
+        btn_make.grid(row=5, column=1)
+
 
     def save_info(self, type_of_run, primary_weight, primary_spring, secondary_spring, secondary_clock, controller):
 
@@ -137,9 +137,12 @@ class InputPage(tk.Frame):
 
         global file
 
+        ini_time_for_now = datetime.now()
+        current_time = ini_time_for_now.strftime("%H:%M:%S")
+
         file = open("HEDATA_" + today + ".csv", "a")
 
-        file.write(str(timedelta(minutes=100))[:-3] + '\n')
+        file.write(str(today) + '\n' + str(current_time) + '\n')
         file.write(str(ToR) + '\n')
         file.write(str(P_Weight) + '\n')
         file.write(str(P_Spring) + '\n')
