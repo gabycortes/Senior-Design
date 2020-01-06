@@ -119,12 +119,13 @@ class InputPage(tk.Frame):
                                                                                  entry_primary_weight.get(),
                                                                                  entry_primary_spring.get(),
                                                                                  entry_secondary_spring.get(),
-                                                                                 entry_secondary_clock.get()))
+                                                                                 entry_secondary_clock.get(),
+                                                                                    controller))
         btn_ok.grid(row=5, column=0)
-        btn_make = tk.Button(self, text="Start Over", padx = 20, command=lambda: controller.make_file())
-        btn_make.grid(row=5, column=1)
+        # btn_make = tk.Button(self, text="Start Over", padx = 20, command=lambda: controller.make_file())
+        # btn_make.grid(row=5, column=1)
 
-    def save_info(self, type_of_run, primary_weight, primary_spring, secondary_spring, secondary_clock):
+    def save_info(self, type_of_run, primary_weight, primary_spring, secondary_spring, secondary_clock, controller):
 
         global today
 
@@ -137,6 +138,7 @@ class InputPage(tk.Frame):
         global file
 
         file = open("HEDATA_" + today + ".csv", "a")
+
         file.write(str(timedelta(minutes=100))[:-3] + '\n')
         file.write(str(ToR) + '\n')
         file.write(str(P_Weight) + '\n')
@@ -145,6 +147,8 @@ class InputPage(tk.Frame):
         file.write(str(S_Clock) + '\n\n')
 
         file.close()
+
+        controller.show_frame("StartPage")
 
 
 class PageTwo(tk.Frame):
