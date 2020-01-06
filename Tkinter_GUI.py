@@ -3,8 +3,6 @@ import tkinter as tk                # python 3
 from tkinter import font  as tkfont # python 3
 from datetime import date
 from datetime import timedelta, datetime
-
-import time
 #import Tkinter as tk     # python 2
 #import tkFont as tkfont  # python 2
 
@@ -44,14 +42,6 @@ class SampleApp(tk.Tk):
         frame = self.frames[page_name]
         frame.tkraise()
 
-    def make_file(self):
-        global file
-        file = open("HEDATA_" + today + ".csv", "w")
-        file.write(today + '\n\n')
-        file.close()
-
-    def take_pictures(self):
-        os.system('python3 simple.py')
 
 
 class StartPage(tk.Frame):
@@ -121,8 +111,6 @@ class InputPage(tk.Frame):
                                                                                  entry_secondary_clock.get(),
                                                                                     controller))
         btn_ok.grid(row=5, column=0)
-        btn_make = tk.Button(self, text="Take Pictures", padx = 20, command=lambda: controller.take_pictures())
-        btn_make.grid(row=5, column=1)
 
 
     def save_info(self, type_of_run, primary_weight, primary_spring, secondary_spring, secondary_clock, controller):
