@@ -1,7 +1,13 @@
+import os
 import tkinter as tk                # python 3
 from tkinter import font  as tkfont # python 3
+from datetime import date
+from datetime import timedelta, datetime
 #import Tkinter as tk     # python 2
 #import tkFont as tkfont  # python 2
+
+today = date.today()
+today = today.strftime("%m-%d-%y")
 
 class SampleApp(tk.Tk):
 
@@ -9,6 +15,8 @@ class SampleApp(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
+        self.title("Cal State LA Baja SAE CVT Test")
+        self.geometry("500x500+100+100")
 
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
@@ -36,6 +44,11 @@ class SampleApp(tk.Tk):
         frame = self.frames[page_name]
         frame.tkraise()
 
+    def start_collection(self, running):
+        self.show_frame("StartPage")
+        while(running):
+            print("I am here")
+        print("Stopped")
 
 class StartPage(tk.Frame):
 
@@ -43,26 +56,22 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        #self.title("Cal State LA Baja SAE CVT Test")
-        #self.geometry("500x500+100+100")
-
         lbl_status = tk.Label(self, text = "New test run created, ready to begin.")
-        lbl_status.grid(row = 1, column = 0)
+        lbl_status.grid(row=1, column=0)
 
         lbl_primarytitle = tk.Label(self, text = "Primary RPM")
-        lbl_primarytitle.grid(row = 2, column = 0)
+        lbl_primarytitle.grid(row=2, column=0)
 
         lbl_secondarytitle = tk.Label(self, text = "Secondary RPM")
-        lbl_secondarytitle.grid(row = 2, column = 1)
+        lbl_secondarytitle.grid(row=2, column=1)
 
-        #to pass parameters to command use
+        # to pass parameters to command use
         # command = lambda: method_name(args)
         btn_start = tk.Button(self, text="Start Test Run", padx = 20, command =lambda: controller.show_frame("InputPage"))
-        btn_start.grid(row = 0, column = 0)
+        btn_start.grid(row=0, column=0)
 
-        btn_stop = tk.Button(self, text="Stop Test Run", padx = 20)
-        btn_stop.grid(row = 0, column = 1)
-
+        btn_stop = tk.Button(self, text="Stop Test Run", padx = 20, command =lambda: controller.start_collection(False))
+        btn_stop.grid(row=0, column=1)
 
 class InputPage(tk.Frame):
 
@@ -97,10 +106,42 @@ class InputPage(tk.Frame):
         entry_secondary_clock.grid(row = 4, column = 1)
 
         # create method to save entries before quitting
-        btn_ok = tk.Button(self, text="OK", padx = 20)
-        btn_ok.grid(row = 5, column = 0)
+        btn_ok = tk.Button(self, text="OK", padx=20, command=lambda: self.save_info(entry_test_type.get(),
+                                                                                 entry_primary_weight.get(),
+                                                                                 entry_primary_spring.get(),
+                                                                                 entry_secondary_spring.get(),
+                                                                                 entry_secondary_clock.get(),
+                                                                                    controller))
+        btn_ok.grid(row=5, column=0)
 
 
+    def save_info(self, type_of_run, primary_weight, primary_spring, secondary_spring, secondary_clock, controller):
+
+        global today
+
+        ToR = type_of_run
+        P_Weight = primary_weight
+        P_Spring = primary_spring
+        S_Spring = secondary_spring
+        S_Clock = secondary_clock
+
+        global file
+
+        ini_time_for_now = datetime.now()
+        current_time = ini_time_for_now.strftime("%H:%M:%S")
+
+        file = open("HEDATA_" + today + ".csv", "a")
+
+        file.write(str(today) + '\n' + str(current_time) + '\n')
+        file.write(str(ToR) + '\n')
+        file.write(str(P_Weight) + '\n')
+        file.write(str(P_Spring) + '\n')
+        file.write(str(S_Spring) + '\n')
+        file.write(str(S_Clock) + '\n\n')
+
+        file.close()
+        controller.start_collection(True)
+        
 
 class PageTwo(tk.Frame):
 
@@ -112,7 +153,6 @@ class PageTwo(tk.Frame):
         button = tk.Button(self, text="Go to the start page",
                            command=lambda: controller.show_frame("StartPage"))
         button.pack()
-
 
 if __name__ == "__main__":
     app = SampleApp()
