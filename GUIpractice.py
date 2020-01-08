@@ -1,13 +1,16 @@
 import os
-import tkinter as tk                # python 3
-from tkinter import font  as tkfont # python 3
+import tkinter as tk  # python 3
+from tkinter import font  as tkfont  # python 3
 from datetime import date
 from datetime import timedelta, datetime
-#import Tkinter as tk     # python 2
-#import tkFont as tkfont  # python 2
+from subprocess import Popen
+
+# import Tkinter as tk     # python 2
+# import tkFont as tkfont  # python 2
 
 today = date.today()
 today = today.strftime("%m-%d-%y")
+
 
 class SampleApp(tk.Tk):
 
@@ -46,9 +49,12 @@ class SampleApp(tk.Tk):
 
     def start_collection(self, running):
         self.show_frame("StartPage")
-        while(running):
-            print("I am here")
+        global process
+        process = Popen(['python3', 'infinite_runner.py'])
+        # while (running):
+        #     print("I am here")
         print("Stopped")
+
 
 class StartPage(tk.Frame):
 
@@ -56,33 +62,34 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        lbl_status = tk.Label(self, text = "New test run created, ready to begin.")
+        lbl_status = tk.Label(self, text="New test run created, ready to begin.")
         lbl_status.grid(row=1, column=0)
 
-        lbl_primarytitle = tk.Label(self, text = "Primary RPM")
+        lbl_primarytitle = tk.Label(self, text="Primary RPM")
         lbl_primarytitle.grid(row=2, column=0)
 
-        lbl_secondarytitle = tk.Label(self, text = "Secondary RPM")
+        lbl_secondarytitle = tk.Label(self, text="Secondary RPM")
         lbl_secondarytitle.grid(row=2, column=1)
 
         # to pass parameters to command use
         # command = lambda: method_name(args)
-        btn_start = tk.Button(self, text="Start Test Run", padx = 20, command =lambda: controller.show_frame("InputPage"))
+        btn_start = tk.Button(self, text="Start Test Run", padx=20, command=lambda: controller.show_frame("InputPage"))
         btn_start.grid(row=0, column=0)
 
-        btn_stop = tk.Button(self, text="Stop Test Run", padx = 20, command =lambda: controller.start_collection(False))
+        btn_stop = tk.Button(self, text="Stop Test Run", padx=20, command=lambda: controller.start_collection(False))
         btn_stop.grid(row=0, column=1)
+
 
 class InputPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        lbl_enter_test_type = tk.Label(self, text = "Type of test run: ")
-        lbl_enter_primary_weight = tk.Label(self, text = "CVT primary weight: ")
-        lbl_enter_primary_spring = tk.Label(self, text = "CVT primary spring: ")
-        lbl_enter_secondary_spring = tk.Label(self, text = "CVT secondary spring: ")
-        lbl_enter_secondary_clock = tk.Label(self, text = "CVT secondary clock: ")
+        lbl_enter_test_type = tk.Label(self, text="Type of test run: ")
+        lbl_enter_primary_weight = tk.Label(self, text="CVT primary weight: ")
+        lbl_enter_primary_spring = tk.Label(self, text="CVT primary spring: ")
+        lbl_enter_secondary_spring = tk.Label(self, text="CVT secondary spring: ")
+        lbl_enter_secondary_clock = tk.Label(self, text="CVT secondary clock: ")
 
         entry_test_type = tk.Entry(self)
         entry_primary_weight = tk.Entry(self)
@@ -90,33 +97,31 @@ class InputPage(tk.Frame):
         entry_secondary_spring = tk.Entry(self)
         entry_secondary_clock = tk.Entry(self)
 
-        lbl_enter_test_type.grid(row = 0, column = 0)
-        entry_test_type.grid(row = 0, column = 1)
+        lbl_enter_test_type.grid(row=0, column=0)
+        entry_test_type.grid(row=0, column=1)
 
-        lbl_enter_primary_weight.grid(row = 1, column = 0)
-        entry_primary_weight.grid(row = 1, column = 1)
+        lbl_enter_primary_weight.grid(row=1, column=0)
+        entry_primary_weight.grid(row=1, column=1)
 
-        lbl_enter_primary_spring.grid(row = 2, column = 0)
-        entry_primary_spring.grid(row = 2, column = 1)
+        lbl_enter_primary_spring.grid(row=2, column=0)
+        entry_primary_spring.grid(row=2, column=1)
 
-        lbl_enter_secondary_spring.grid(row = 3, column = 0)
-        entry_secondary_spring.grid(row = 3, column = 1)
+        lbl_enter_secondary_spring.grid(row=3, column=0)
+        entry_secondary_spring.grid(row=3, column=1)
 
-        lbl_enter_secondary_clock.grid(row = 4, column = 0)
-        entry_secondary_clock.grid(row = 4, column = 1)
+        lbl_enter_secondary_clock.grid(row=4, column=0)
+        entry_secondary_clock.grid(row=4, column=1)
 
         # create method to save entries before quitting
         btn_ok = tk.Button(self, text="OK", padx=20, command=lambda: self.save_info(entry_test_type.get(),
-                                                                                 entry_primary_weight.get(),
-                                                                                 entry_primary_spring.get(),
-                                                                                 entry_secondary_spring.get(),
-                                                                                 entry_secondary_clock.get(),
+                                                                                    entry_primary_weight.get(),
+                                                                                    entry_primary_spring.get(),
+                                                                                    entry_secondary_spring.get(),
+                                                                                    entry_secondary_clock.get(),
                                                                                     controller))
         btn_ok.grid(row=5, column=0)
 
-
     def save_info(self, type_of_run, primary_weight, primary_spring, secondary_spring, secondary_clock, controller):
-
         global today
 
         ToR = type_of_run
@@ -141,7 +146,7 @@ class InputPage(tk.Frame):
 
         file.close()
         controller.start_collection(True)
-        
+
 
 class PageTwo(tk.Frame):
 
@@ -153,6 +158,7 @@ class PageTwo(tk.Frame):
         button = tk.Button(self, text="Go to the start page",
                            command=lambda: controller.show_frame("StartPage"))
         button.pack()
+
 
 if __name__ == "__main__":
     app = SampleApp()
