@@ -50,10 +50,10 @@ class SampleApp(tk.Tk):
     def start_collection(self, running):
         self.show_frame("StartPage")
         global process
-        process = Popen(['python3', 'infinite_runner.py'])
-        # while (running):
-        #     print("I am here")
-        print("Stopped")
+        if(running):
+            process = Popen(['python', 'infinite_runner.py'])
+        else:
+            process.terminate()
 
 
 class StartPage(tk.Frame):
