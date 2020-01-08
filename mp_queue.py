@@ -18,7 +18,7 @@ spi.max_speed_hz=1000000
 # Create I2C bus.
 i2c = busio.I2C(board.SCL, board.SDA)
 sensor = adafruit_vl6180x.VL6180X(i2c)
-
+#creat and open a csv file if it not exist
 file = open("HEDATA_10-28.csv", "w+")
 
 he_channel1 = 0
