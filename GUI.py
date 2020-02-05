@@ -1,6 +1,6 @@
 import os
-import tkinter as tk  # python 3
-from tkinter import font  as tkfont  # python 3
+import tkinter as tk 
+from tkinter import font  as tkfont  
 from datetime import date
 from datetime import timedelta, datetime
 from subprocess import Popen
@@ -47,11 +47,17 @@ class SampleApp(tk.Tk):
 
     def start_collection(self, running):
         self.show_frame("StartPage")
-        global process
+        global process1
+        global process2
+        global process3
         if(running):
-            process = Popen(['python', 'infinite_runner.py', file_name])
+            process1 = Popen(['python3', 'gps_module_script.py', file_name])
+            process2 = Popen(['python3', 'picamera_script.py', file_name])
+            process3 = Popen(["sshpass", "-p", "raspberry", "ssh", "pi@169.254.211.228", "python3", "test.py"])
         else:
-            process.terminate()
+            process1.terminate()
+            process2.terminate()
+            process3.terminate()
 
 
 class StartPage(tk.Frame):
@@ -122,28 +128,28 @@ class InputPage(tk.Frame):
     def save_info(self, type_of_run, primary_weight, primary_spring, secondary_spring, secondary_clock, controller):
         global today
 
-        ToR = type_of_run
+        typeOfRun = type_of_run
         P_Weight = primary_weight
         P_Spring = primary_spring
         S_Spring = secondary_spring
         S_Clock = secondary_clock
 
         global file
-
-        ini_time_for_now = datetime.now()
-        current_time = ini_time_for_now.strftime("%H:%M:%S")
-
-        # "/media/pi/PI3USB/HEDATA_" + today + ".csv"
         global file_name
-        file_name = "/media/pi/PI3USB/HEDATA_" + today + ".csv"
-        file = open(file_name, "a")
+        
+        ini_time_for_now = datetime.now()
+        current_time = ini_time_for_now.strftime("%H-%M-%S")
+        
+        file_name = "/media/pi/PI3USB/BajaTest_" + today + "_" + str(current_time)
+        file = open(file_name+".csv", "a")
 
-        file.write(str(today) + '\n' + str(current_time) + '\n')
-        file.write(str(ToR) + '\n')
-        file.write(str(P_Weight) + '\n')
-        file.write(str(P_Spring) + '\n')
-        file.write(str(S_Spring) + '\n')
-        file.write(str(S_Clock) + '\n\n')
+        file.write('Date:,' + str(today) + '\n')
+        file.write('Time:,' + str(current_time) + '\n')
+        file.write('Test Run Type:,' + str(typeOfRun) + '\n')
+        file.write('Primary Weight:,' + str(P_Weight) + '\n')
+        file.write('Primary Spring:,' + str(P_Spring) + '\n')
+        file.write('Secondary Spring:,' + str(S_Spring) + '\n')
+        file.write('Secondary Clock:,' + str(S_Clock) + '\n\n')
 
         file.close()
         controller.start_collection(True)
