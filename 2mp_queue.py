@@ -1,25 +1,15 @@
 import multiprocessing
 from random import random
 from datetime import datetime
-#from time import time
-import spidev
-import time
 import queue
 import os
-import board
-import busio
-import adafruit_vl6180x
-
+import spidev
+import time
+ 
 # Open SPI bus
 spi = spidev.SpiDev()
 spi.open(0,0)
 spi.max_speed_hz=1000000
-
-# Create I2C bus.
-i2c = busio.I2C(board.SCL, board.SDA)
-sensor = adafruit_vl6180x.VL6180X(i2c)
-
-file = open("HEDATA_10-28.csv", "w+")
 
 he_channel1 = 0
 he_channel2 = 1
@@ -40,32 +30,62 @@ def ReadChannel(channel):
   data = ((adc[1]&3) << 8) + adc[2]
   return data
 
-def consumer(q):
-    file = open("HEDATA_10-28.csv", "w+")
-    while q.qsize() > 0 :       
-        obj = q.get()
-        file.write(str(obj[0])+','+ str(obj[1])+','+str(obj[2])+'\n')
-        print(str(obj[0])+','+ str(obj[1])+','+str(obj[2])+'\n')
-    file.close()
+myFile = open("MPpiTest_10-21.csv", "w+")
 
-if __name__ == '__main__':
+def producer1(conn, queue):
+    for i in range(queue.qsize()):
+        msgs = queue.get()
+        conn.send(msgs)
+        print("\nP1 produced the data: {}".format(msgs))
+    conn.close()
     
-    my_queue = multiprocessing.Queue()
+    
+def producer2(conn, queue):
+    for i in range(queue.qsize()):
+        msgs = queue.get()
+        conn.send(msgs)
+        print("\nP2 produced the data: {}".format(msgs))
+    conn.close()
 
-#while True:    
+def producer3(conn, queue):
+    for i in range(queue.qsize()):
+        msgs = queue.get()
+        conn.send(msgs)
+        print("\nP3 produced the data: {}".format(msgs))
+    conn.close()
+
+def consumer(conn):
+    while conn.poll():
+        msg = conn.recv()
+        print("\nReceived the data: {}".format(msg))
+        myFile.write("\n"+str(msg))
+    myFile.close()
+
+if __name__ == "__main__":
+    #beautify data and check data saving efficiency (delta t avg)
+    
+    # messages to be sent
+    my_queue = queue.Queue()
+    
+    # creating a pipe
+    producer_conn, consumer_conn = multiprocessing.Pipe()
+    
+        
+    # sensor name, data value, timestamp
+    #while True:    
     print("BEGINNING OF LOOP")
     
-    while my_queue.qsize() < 100:
+    while my_queue.qsize() < 10:
         print("READING SENSORS")
         currentVal1 = ReadChannel(he_channel1)
         currentVal2 = ReadChannel(he_channel2)
+        
         
         if (currentVal1 < 20):
             magnet1 = True
         else:
             magnet1 = False
-        
-        # start of HE1 RPM Threshold ---------------------
+            
         if (magnet1 and not(magnet1 == hasChanged1)):
             t_currentRev1 = time.time()
             RPM1 = 60/(t_currentRev1-t_lastRev1)
@@ -75,7 +95,6 @@ if __name__ == '__main__':
         hasChanged1 = magnet1
         t_lastRev1 = t_currentRev1
 
-        # start of HE2 RPM Threshold ---------------------
         if (currentVal2 < 20):
             magnet2 = True
         else:
@@ -91,18 +110,29 @@ if __name__ == '__main__':
         hasChanged2 = magnet2
         t_lastRev2 = t_currentRev2
         
-        distance = sensor.range
-        distance /= 25.4
-        
-        # start of HE1 RPM Threshold ---------------------
-        # x = ("Dist", distance, datetime.now().time())
+        # x = ("Dist", (int(random()*100)), datetime.now().time())
         # my_queue.put(x)
-        
-    p = multiprocessing.Process(target=consumer, args=(my_queue,))
-     
-    p.start()   
-    # Wait for the worker to finish
-    my_queue.close()
-    my_queue.join_thread()
-    p.join()
+                
+
+    
+    # creating new processes
+    p1 = multiprocessing.Process(target=producer1, args=(producer_conn, my_queue))
+    # p2 = multiprocessing.Process(target=producer2, args=(producer_conn, my_queue))
+    # p3 = multiprocessing.Process(target=producer3, args=(producer_conn, my_queue))
+    p4 = multiprocessing.Process(target=consumer, args=(consumer_conn,))
+
+    print("PROCESSES STARTING")
+    # running processes
+    p1.start()
+    #p2.start()
+    #p3.start()
+    p4.start()
+
+    # wait until processes finish
+    p1.join()
+    #p2.join()
+    #p3.join()
+    p4.join()
+    print("PROCESSES HAVE JOINED, END OF LOOP")
     print(my_queue.qsize())
+
