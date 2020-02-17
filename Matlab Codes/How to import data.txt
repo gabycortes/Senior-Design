@@ -1,0 +1,10 @@
+Make sure you're in the home tab
+Select "import data"
+Drop down "Delimited, add colon, make sure the box is checked"
+Make sure new columns are highlighted
+Change "Output Type" to column vectors
+Change names of columns 
+(to be consistent, use type, value, hour, min, sec)
+change first column type dropdown from Number to Categorical
+
+"Import Selection"
