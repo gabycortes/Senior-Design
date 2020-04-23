@@ -14,6 +14,7 @@ type_count = countcats(T.sensor);
 dist = T.value(1:type_count(1));
 % convert hour and minute to second, add them with second for only sensor
 dist_time = T.hour(1:type_count(1))*3600 + T.min(1:type_count(1))*60 +T.sec(1:type_count(1));
+dist_time = dist_time - dist_time(1);
 
 he1_end = type_count(1)+1+type_count(2);
 he1 = T.value(type_count(1)+1:he1_end);
@@ -25,34 +26,42 @@ he2_time = T.hour(he1_end+1:end)*3600 + T.min(he1_end+1:end)*60 +T.sec(he1_end+1
 % free memory used by table
 clear T;
 
-% show original RPMs
-%twoPlots(he1_time, he1, he2_time, he2, 6000, 'Unfiltered Primary and Secondary RPM', 'Secondary RPM', 'Primary RPM');
+% show original RPMs and distance
+twoPlots(he1_time - he1_time(1), he1, he2_time - he2_time(1), he2, 6000, 'Unfiltered Primary and Secondary RPM', 'Secondary RPM', 'Primary RPM');
+onePlot(dist_time - dist_time(1), dist, 2, 'Unfiltered Distance', 'Time (s)', 'Distance (in)');
 
 % run secondary through data filter
 [he1_filtered, he1_time_filtered] = filter(he1, he1_time);
 he1_filtered = movmean(he1_filtered, 5);
-%twoPlots(he1_time, he1, he1_time_filtered, he1_filtered, 6000, 'Secondary Filtered vs Unfiltered RPM', 'Unfiltered', 'Filtered');
+twoPlots(he1_time - he1_time(1), he1, he1_time_filtered - he1_time_filtered(1), he1_filtered, 6000, 'Secondary Filtered vs Unfiltered RPM', 'Unfiltered', 'Filtered');
 
 % run primary through  data filter
 [he2_filtered, he2_time_filtered] = filter(he2, he2_time);
 [he2_filtered, he2_time_filtered] = filter(he2_filtered, he2_time_filtered);
-%twoPlots(he2_time, he2, he2_time_filtered, he2_filtered, 6000, 'Primary Filtered vs Unfiltered RPM', 'Unfiltered', 'Filtered');
+twoPlots(he2_time - he2_time(1), he2, he2_time_filtered - he2_time_filtered(1), he2_filtered, 6000, 'Primary Filtered vs Unfiltered RPM', 'Unfiltered', 'Filtered');
 
 % create an equal number of data points for both RPMs
 time = combine(he1_time_filtered, he2_time_filtered);
 he2_filtered = fill(he2_time_filtered, he2_filtered, time);
 he1_filtered = fill(he1_time_filtered, he1_filtered, time);
 
-
 % generate a plot of filtered RPMs
-twoPlots(time, he1_filtered, time, he2_filtered, 6000, 'Primary vs Secondary RPM', 'Secondary', 'Primary')
+twoPlots(time - time(1), he1_filtered, time - time(1), he2_filtered, 6000, 'Filtered Primary and Secondary RPM', 'Secondary RPM', 'Primary RPM')
 
 % shows distance sensor data with and without filter 
-%twoPlots(dist_time, dist, dist_time, sgolayfilt(dist,1,17), 2, 'Distance Sensor Filtered vs Unfiltered', 'Unfiltered Distance (in)', 'Filtered Distance (in)');
+twoPlots(dist_time, dist, dist_time, sgolayfilt(dist,1,17), 2, ' Unfiltered and Filtered Distance', 'Unfiltered Distance (in)', 'Filtered Distance (in)');
 
 % calculate ratio
-ratio = he1_filtered./he2_filtered;
-onePlot(time, ratio, 1.5, 'Ratio of Primary and Secondary', 'Ratio')
+ratio = he2_filtered ./ he1_filtered;
+onePlot(time - time(1), ratio, 4.5, 'Ratio of Primary and Secondary RPM', 'Time (s)', 'Ratio');
+
+onePlot(he2_filtered, ratio, 4.5, 'Primary RPM vs Ratio', 'Primary RPM', 'Ratio');
+
+% curve = animatedline;
+% for i = 1:length(he2_filtered)
+%     addpoints(curve, he2_filtered(i), ratio(i));
+%     drawnow
+% end
 
 function Y2 = fill(X1, Y1, X2)
 
@@ -92,7 +101,6 @@ function x = combine(X1, X2)
 % together in order
 
     x1 = 1:(length(X1)+ length(X2));
-    i = 1;
     m = 1;
     n = 1;
     for i = 1:length(x1)
@@ -178,7 +186,7 @@ importTable = readtable(filename, opts);
 
 end
 
-function onePlot(X1, Y1, max, graph_title, label_y)
+function onePlot(X1, Y1, max, graph_title, label_x, label_y)
 
 % combines graphs of X1, Y1 and X2, Y2 in the same plot
 
@@ -191,17 +199,18 @@ hold('on');
 grid minor;
 
 plot(X1,Y1,'Marker','.',...
-    'LineStyle','none')
+    'LineStyle','none');
 
 % Create left y axis label
-ylabel(label_y);
+ylabel(label_y,'fontsize',20);
 ylim([0 max])
 
 % Create x axis label - only need one since the same data is represented
-xlabel('Time (s)');
+xlabel(label_x,'fontsize',20);
 
 % Create title - change queue size here
-title(graph_title);
+title(graph_title,'fontsize',20);
+set(gca,'FontSize',20);
 
 end
 
@@ -224,11 +233,11 @@ plot(X1,Y1,'Marker','.',...
     'LineStyle','none')
 
 % Create left y axis label
-ylabel(label_y1);
+ylabel(label_y1,'fontsize',20);
 ylim([0 max])
 
 % Create x axis label - only need one since the same data is represented
-xlabel('Time (s)');
+xlabel('Time (s)', 'fontsize',20);
 
 % right plot will generate y axis on right side
 yyaxis(axes1,'right');
@@ -236,10 +245,11 @@ plot(X2,Y2,'Marker','.',...
     'LineStyle','none')
 
 % Create right y axis label
-ylabel(label_y2);
+ylabel(label_y2, 'fontsize',20);
 ylim([0 max])
 
 % Create title - change queue size here
-title(graph_title);
+title(graph_title,'fontsize',20);
+set(gca,'FontSize',20);
 
 end
