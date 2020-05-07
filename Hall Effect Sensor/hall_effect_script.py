@@ -1,7 +1,6 @@
 import multiprocessing
 from random import random
 from datetime import datetime, date
-#from time import time
 import spidev
 import time
 import queue
@@ -10,16 +9,17 @@ import board
 import busio
 import adafruit_vl6180x
 
+# Get the current date and set the size of the queue.
 today = date.today()
 today = today.strftime("%m-%d-%y")
 QUEUE_SIZE = 6000
 
-# time_for_now = datetime.now()
+# Get the current time and initialize the file where the data will be saved.
 current_time = datetime.now().strftime("%H-%M-%S")
 file_name = "/media/pi/BajaSSD1/BajaTest_" + today + "_" + str(current_time)
 file = open(file_name + ".csv", "a")
 
-# Open SPI bus
+# Open SPI bus.
 spi = spidev.SpiDev()
 spi.open(0,0)
 spi.max_speed_hz=1000000
@@ -28,13 +28,13 @@ spi.max_speed_hz=1000000
 i2c = busio.I2C(board.SCL, board.SDA)
 sensor = adafruit_vl6180x.VL6180X(i2c)
 
+# Initialize the variabeles to be used.
 he_channel1 = 0
 he_channel2 = 1
 magnet1 = False
 hasChanged1 = False
 magnet2 = False
 hasChanged2 = False
-
 
 t_lastRev1 = time.time()
 t_currentRev1 = time.time()
@@ -43,11 +43,15 @@ t_lastRev2 = time.time()
 t_currentRev2 = time.time()
 
 def ReadChannel(channel):
+  # Gets information from hall effect sensors.
+  # Turns it into useable digital data.
   adc = spi.xfer2([1,(8+channel)<<4,0])
   data = ((adc[1]&3) << 8) + adc[2]
   return data
 
 def consumer(q):
+    # Once the queue is full, take data from queue and write it into .csv file.
+    # Continues until the queue is empty.
     file = open(file_name + ".csv", "a")
     while q.qsize() > 0 :       
         obj = q.get()
@@ -57,21 +61,26 @@ def consumer(q):
 
 if __name__ == '__main__':
     
-    
     print("READING SENSORS")
     
+    # Write the size of the queue into the first line of the .csv file.
     file = open(file_name + ".csv", "a")
     file.write(str(QUEUE_SIZE)+"\n")
     file.close()
     
     while True:    
-        # print("BEGINNING OF LOOP")
+        # Initialize the queue.
         my_queue = multiprocessing.Queue()
+        
+        # Add to the queue until the specified size has been reached.
         while my_queue.qsize() < QUEUE_SIZE:
             
+            # Get the raw digital data from the hall effect sensors.
             currentVal1 = ReadChannel(he_channel1)
             currentVal2 = ReadChannel(he_channel2)
             
+            # Determine if the hall effect sensor is over a magnet.
+            # 980 was the most optimal value to serve as the threshold.
             if (currentVal1 > 980):
                 magnet1 = True
             else:
@@ -79,6 +88,7 @@ if __name__ == '__main__':
 
             # start of HE1 RPM Threshold ---------------------
             if (magnet1 and not(magnet1 == hasChanged1)):
+                # since the magnet is once again over the hall effect sensor, a full rotation has happened. 
                 t_currentRev1 = time.time()
                 RPM1 = 60/(t_currentRev1-t_lastRev1)
                 print("magnet ----1---- detected\t"+str(round(RPM1,2)) + "\t"+ str(datetime.now().time()))
@@ -118,9 +128,10 @@ if __name__ == '__main__':
         p = multiprocessing.Process(target=consumer, args=(my_queue,))
          
         p.start()   
+        
         # Wait for the worker to finish
         my_queue.close()
         my_queue.join_thread()
         p.join()
-        # print(my_queue.qsize())
+
     print("FINISHED SAVING DATA")
