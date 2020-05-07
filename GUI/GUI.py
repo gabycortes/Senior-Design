@@ -46,6 +46,7 @@ class SampleApp(tk.Tk):
         frame.tkraise()
 
     def start_collection(self, running):
+        '''Initiate the ssh connection and start the data collection scripts.'''
         self.show_frame("StartPage")
         global process1
         global process2
@@ -63,6 +64,7 @@ class SampleApp(tk.Tk):
 class StartPage(tk.Frame):
 
     def __init__(self, parent, controller):
+        '''Create the initial start page containing the controller buttons.'''
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
@@ -87,6 +89,7 @@ class StartPage(tk.Frame):
 class InputPage(tk.Frame):
 
     def __init__(self, parent, controller):
+        '''Create the input page containing the text fields.'''
         tk.Frame.__init__(self, parent)
         self.controller = controller
         lbl_enter_test_type = tk.Label(self, text="Type of test run: ")
@@ -126,8 +129,9 @@ class InputPage(tk.Frame):
         btn_ok.grid(row=5, column=0)
 
     def save_info(self, type_of_run, primary_weight, primary_spring, secondary_spring, secondary_clock, controller):
+        '''Save the information entered in the Input page.'''
         global today
-
+        # initialize text field variables
         typeOfRun = type_of_run
         P_Weight = primary_weight
         P_Spring = primary_spring
@@ -139,10 +143,11 @@ class InputPage(tk.Frame):
         
         ini_time_for_now = datetime.now()
         current_time = ini_time_for_now.strftime("%H-%M-%S")
-        
+
         file_name = "/media/pi/PI3USB/BajaTest_" + today + "_" + str(current_time)
         file = open(file_name+".csv", "a")
-
+        
+        # Save the information in the text fields.
         file.write('Date:,' + str(today) + '\n')
         file.write('Time:,' + str(current_time) + '\n')
         file.write('Test Run Type:,' + str(typeOfRun) + '\n')
@@ -152,6 +157,8 @@ class InputPage(tk.Frame):
         file.write('Secondary Clock:,' + str(S_Clock) + '\n\n')
 
         file.close()
+        
+        # Start the data collection
         controller.start_collection(True)
 
 
