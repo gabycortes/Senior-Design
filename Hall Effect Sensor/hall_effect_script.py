@@ -26,6 +26,7 @@ spi.max_speed_hz=1000000
 
 # Create I2C bus.
 i2c = busio.I2C(board.SCL, board.SDA)
+# Create an instance of the distance sensor.
 sensor = adafruit_vl6180x.VL6180X(i2c)
 
 # Initialize the variabeles to be used.
@@ -79,31 +80,41 @@ if __name__ == '__main__':
             currentVal1 = ReadChannel(he_channel1)
             currentVal2 = ReadChannel(he_channel2)
             
+            # start of HE1 RPM Threshold ---------------------
+            
             # Determine if the hall effect sensor is over a magnet.
             # 980 was the most optimal value to serve as the threshold.
             if (currentVal1 > 980):
                 magnet1 = True
             else:
                 magnet1 = False
-
-            # start of HE1 RPM Threshold ---------------------
+           
+            # If the magnet is over the hall effect sensor, a full revolution happened.
             if (magnet1 and not(magnet1 == hasChanged1)):
-                # since the magnet is once again over the hall effect sensor, a full rotation has happened. 
+              
+                # Set the time of the current revolution.
                 t_currentRev1 = time.time()
+                
+                # Calculate the RPM and put it into the queue.
                 RPM1 = 60/(t_currentRev1-t_lastRev1)
                 print("magnet ----1---- detected\t"+str(round(RPM1,2)) + "\t"+ str(datetime.now().time()))
                 x = ("HE1", RPM1, datetime.now().time())
                 my_queue.put(x)
-
+                
+                # Get the current range of the distance sensor and put it into the queue.
                 distance = sensor.range
                 distance /= 25.4
                 y = ("Dist", distance, datetime.now().time())
                 my_queue.put(y)
-
+            
             hasChanged1 = magnet1
             t_lastRev1 = t_currentRev1
 
+            
             # start of HE2 RPM Threshold ---------------------
+            
+            # The HE2 RPM Threshold is largely the same as HE1 RPM Threshold
+            # 20 was chosen instead of 980 as the magnet was flipped. 
             if (currentVal2 < 20):
                 magnet2 = True
             else:
@@ -124,6 +135,7 @@ if __name__ == '__main__':
             hasChanged2 = magnet2
             t_lastRev2 = t_currentRev2
 
+        # Once the queue is full, call the consumer() to extract the data.
         print("SAVING DATA")    
         p = multiprocessing.Process(target=consumer, args=(my_queue,))
          
