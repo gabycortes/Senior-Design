@@ -29,7 +29,7 @@ i2c = busio.I2C(board.SCL, board.SDA)
 # Create an instance of the distance sensor.
 sensor = adafruit_vl6180x.VL6180X(i2c)
 
-# Initialize the variabeles to be used.
+# Initialize instance variables.
 he_channel1 = 0
 he_channel2 = 1
 magnet1 = False
