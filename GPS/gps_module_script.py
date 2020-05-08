@@ -6,15 +6,15 @@ from datetime import datetime
 
 file_name = sys.argv[1] + ".csv"
 
-
-
-
 lat_list = []
 lng_list = []
+
+# Initialize the Google Maps plotter
 gmap1 = gmplot.GoogleMapPlotter(34.14180996, -118.2253155, 13 ) 
 gmap1.apikey = "AIzaSyCwwzLYbIDnY0G_7DmqtsH1CmKltblaaA8"
 
 def readString():
+    '''Read line of coordinate data.'''
     while 1:
             while ser.read().decode("utf-8") != '$':
                 pass
@@ -22,9 +22,11 @@ def readString():
             return line
         
 def getTime(string, format, returnFormat):
+    '''Returns time in specified format.'''
     return time.strftime(returnFormat, time.strptime(string, format))
     
 def getLatLng(latString, lngString):
+    '''Formats the longitude and latitude data to write into file.'''
     try:
         lat = latString[:2].lstrip('0') + "." + "%.7s" % str(float(latString[2:]) * 1 / 60).lstrip("0.")
         lng = lngString[:3].lstrip('0') + "." + "%.7s" % str(float(lngString[3:]) * 1 / 60).lstrip("0.")
@@ -33,6 +35,7 @@ def getLatLng(latString, lngString):
         print("")
     
 def printGLL(lines):
+    '''Prints the coordinate data to the console'''
     try:
         print("========================================GLL========================================")
         latlng = getLatLng(lines[1], lines[3])
