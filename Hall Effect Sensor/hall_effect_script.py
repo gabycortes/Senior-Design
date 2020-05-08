@@ -45,7 +45,7 @@ t_currentRev2 = time.time()
 
 def ReadChannel(channel):
   # Gets information from hall effect sensors.
-  # Turns it into useable digital data.
+  # Turns it into usable digital data.
   adc = spi.xfer2([1,(8+channel)<<4,0])
   data = ((adc[1]&3) << 8) + adc[2]
   return data
